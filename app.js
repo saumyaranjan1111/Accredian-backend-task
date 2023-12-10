@@ -40,7 +40,7 @@ app.post('/signup', (req, res) => {
             if(results.length > 0){
                 // this email already exists
                 console.error('Error: User already registered');
-                res.status(409).json({ success : false, message : 'User already registered'});
+                res.status(500).json({ success : false, message : 'User already registered'});
             } else {
                 await bcrypt.hash(password, 10, (error, hash)=>{
 
@@ -85,15 +85,18 @@ app.post('/login', async (req, res) => {
                 // console.log(results[0]);
                 await bcrypt.compare(password, results[0].password, (errormatch, passwordmatch)=>{
                     if(errormatch){
-                        res.status(401).json({ success: false, message: 'invalid credentials'});
+                        res.status(500).json({ success: false, message: 'invalid credentials'});
                     } else {
-                        // no error, that means password has been matched
-                        res.status(200).json({ success: true, message: 'Login successful', welcomeMsg : 'Welcome ' + results[0].fname.toUpperCase() + '!'});
+                        if(passwordmatch){
+                            res.status(200).json({ success: true, message: 'Login successful', welcomeMsg : 'Welcome ' + results[0].fname.toUpperCase() + '!'});
+                        } else {
+                            res.status(500).json({ success: false, message: 'Invalid credentials'});
+                        }
                     }
                 })
             } else {
                 // Invalid credentials
-                res.status(401).json({ success: false, message: 'Invalid credentials' });
+                res.status(500).json({ success: false, message: 'Invalid credentials' });
             }
         }
     });
